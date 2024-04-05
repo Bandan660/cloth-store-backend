@@ -1,20 +1,134 @@
 import { User } from "../models/UserModel.js";
 import expressAsyncHandler from "express-async-handler";
+import bcrypt from "bcrypt";
 
+import { generateToken } from "../config/jwtToken.js";
+
+// register the user
 const registerUser = expressAsyncHandler(async (req, res) => {
-  const { firstname, lastname, email, mobile, password } = req.body;
+  const { firstname, lastname, email, mobile, password, role } = req.body;
+
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(409);
     throw new Error("User already exists");
   }
-  const user = await User.create({
-    firstname,
-    lastname,
-    email,
-    mobile,
-    password,
-  });
-  res.status(201).json(user);
+
+  try {
+    // Encrypt the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Creating the user
+    const user = await User.create({
+      firstname,
+      lastname,
+      email,
+      mobile,
+      password: hashedPassword,
+      role,
+    });
+
+    // Sending response with status code and user data
+    res.status(201).json({ message: "User created successfully", user });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Failed to create user", error: error.message });
+  }
 });
-export default registerUser;
+
+// login the user
+const loginUser = expressAsyncHandler(async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    console.log(password);
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const token = generateToken(user._id);
+
+      res.status(200).json({ message: "Login successful", user, token });
+    } else {
+      res.status(401).json({ message: "Invalid email or password" });
+    }
+  } catch (error) {
+    res.status(400).json({ message: "Failed to login", error: error.message });
+  }
+});
+
+// get all user
+const getAllUser = expressAsyncHandler(async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+// get user by id
+const getUserById = expressAsyncHandler(async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log(user);
+    res.status(200).json({ message: "User found", user });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+// update the user by id
+
+const updateUser = expressAsyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+    let user = await User.findByIdAndUpdate(
+      id,
+      {
+        firstname: req?.body?.firstname,
+        lastname: req?.body?.lastname,
+        mobile: req?.body?.mobile,
+        email: req?.body?.email,
+      },
+      {
+        new: true,
+      }
+    );
+    if (!user) {
+      res.status(400).json({ message: "User not found" });
+    }
+
+    user = await user.save();
+
+    res.status(200).json({ message: "user updated successfully", user });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Failed to update user", error: error.message });
+  }
+});
+
+const deleteUser = expressAsyncHandler(async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      res.status(400).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "user deleted successfully" });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Failed to delete user", error: error.message });
+  }
+});
+
+export {
+  registerUser,
+  loginUser,
+  getAllUser,
+  getUserById,
+  updateUser,
+  deleteUser,
+};

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-// Declare the Schema of the Mongo model
+// Declare the Schema for the user model
 var userSchema = new mongoose.Schema({
   firstname: {
     type: String,
@@ -24,7 +24,21 @@ var userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  role: {
+    type: String,
+    default: "user",
+  },
+  cart: {
+    type: Array,
+    default: [],
+  },
+  address: [{ type: mongoose.Schema.ObjectId, ref: "Address" }],
+  wishlist: [{ type: mongoose.Schema.ObjectId, ref: "Product" }],
+  timestamp: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 //Export the model
-export const User = mongoose.model("User", userSchema);
+export const User = mongoose.models.User || mongoose.model("User", userSchema);

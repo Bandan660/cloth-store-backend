@@ -8,13 +8,12 @@ const AuthMiddleware = asyncHandler(async (req, res, next) => {
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
-    
     token = req.headers.authorization.split(" ")[1];
     try {
       if (token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded?._id);
-        req.user=user;
+        req.user = user;
         next();
       }
     } catch (error) {
@@ -24,4 +23,14 @@ const AuthMiddleware = asyncHandler(async (req, res, next) => {
     throw new Error("there is is no token attached to header");
   }
 });
-export default AuthMiddleware;
+
+const isAdmin = asyncHandler(async (req, res, next) => {
+  const { email } = req.user;
+  const adminUser = await User.findOne({ email });
+  if (adminUser.role !== "admin") {
+    throw new Error("Not authorized as an admin");
+  } else {
+    next();
+  }
+});
+export { AuthMiddleware, isAdmin };

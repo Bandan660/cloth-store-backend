@@ -25,12 +25,21 @@ const AuthMiddleware = asyncHandler(async (req, res, next) => {
 });
 
 const isAdmin = asyncHandler(async (req, res, next) => {
-  const { email } = req.user;
-  const adminUser = await User.findOne({ email });
-  if (adminUser.role !== "admin") {
-    throw new Error("Not authorized as an admin");
-  } else {
+  try {
+    // Check if req.user exists and has the role of "admin"
+    if (!req.user || req.user.role !== "admin") {
+      throw new Error("Not authorized as an admin");
+    }
+    // If user is admin, proceed to the next middleware/route handler
     next();
+  } catch (error) {
+    // Pass any errors to the Express error handler
+    next(error);
   }
 });
+
+
+
+
+
 export { AuthMiddleware, isAdmin };

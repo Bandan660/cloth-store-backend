@@ -1,8 +1,9 @@
 import { User } from "../models/UserModel.js";
 import expressAsyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
-
+import { generaterefreshToken } from "../config/refreshToken.js";
 import { generateToken } from "../config/jwtToken.js";
+import jwt from "jsonwebtoken";
 
 // register the user
 const registerUser = expressAsyncHandler(async (req, res) => {
@@ -39,12 +40,21 @@ const registerUser = expressAsyncHandler(async (req, res) => {
 });
 
 // login the user
+
 const loginUser = expressAsyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     console.log(password);
     if (user && (await bcrypt.compare(password, user.password))) {
+      const refreshToken = generaterefreshToken(user._id);
+      const updateuser = await User.findByIdAndUpdate(user._id, {
+        refreshToken: refreshToken,
+      });
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        maxAge: 48 * 60 * 60 * 1000,
+      });
       const token = generateToken(user._id);
 
       res.status(200).json({ message: "Login successful", user, token });
@@ -54,6 +64,54 @@ const loginUser = expressAsyncHandler(async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: "Failed to login", error: error.message });
   }
+});
+// logout the user
+const logoutUser = expressAsyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+  if (!cookie?.refreshToken) {
+    throw new Error("No refresh token in cookie");
+  }
+  const refreshToken = cookie.refreshToken;
+  const user = await User.findOne({ refreshToken });
+  if (!user) {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+    });
+    return res.sendStatus(204); // forbidden
+  }
+  await User.findOneAndUpdate(
+    { refreshToken: user.refreshToken },
+    {
+      refreshToken: "",
+    }
+  );
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+  });
+  return res.sendStatus(204); // forbidden
+});
+
+// handle refresh token
+const handleRefreshToken = expressAsyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+  if (!cookie?.refreshToken) {
+    throw new Error("No refresh token in cookie");
+  }
+  const refreshToken = cookie.refreshToken;
+  const user = await User.findOne({ refreshToken });
+  // Checking if the user exists and the refresh token is valid
+  if (!user) {
+    throw new Error("User not found");
+  }
+  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+    if (err || user.id !== decoded.id) {
+      throw new Error("Invalid refresh token");
+    }
+    const accessToken = generateToken(user.id);
+    res.status(200).json({ accessToken });
+  });
 });
 
 // get all user
@@ -81,8 +139,9 @@ const getUserById = expressAsyncHandler(async (req, res) => {
 // update the user by id
 
 const updateUser = expressAsyncHandler(async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
     let user = await User.findByIdAndUpdate(
       id,
       {
@@ -131,4 +190,6 @@ export {
   getUserById,
   updateUser,
   deleteUser,
+  handleRefreshToken,
+  logoutUser,
 };

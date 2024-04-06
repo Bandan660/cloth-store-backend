@@ -12,7 +12,7 @@ const AuthMiddleware = asyncHandler(async (req, res, next) => {
     try {
       if (token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded?._id);
+        const user = await User.findById(decoded?.id);
         req.user = user;
         next();
       }
@@ -27,6 +27,7 @@ const AuthMiddleware = asyncHandler(async (req, res, next) => {
 const isAdmin = asyncHandler(async (req, res, next) => {
   try {
     // Check if req.user exists and has the role of "admin"
+    console.log(req.user)
     if (!req.user || req.user.role !== "admin") {
       throw new Error("Not authorized as an admin");
     }

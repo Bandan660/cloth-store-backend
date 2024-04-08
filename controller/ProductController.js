@@ -4,9 +4,45 @@ import expressAsyncHandler from "express-async-handler";
 // get all products
 const getAllProducts = expressAsyncHandler(async (req, res) => {
   try {
+    // filtering
     const queryObj = { ...req.query };
-    const products = await Product.where("category").equals(req.query.category);
-    res.json({ message: "All products fetched successfully", products });
+    const excludeFields = ["page", "sort", "limit", "fields"];
+    excludeFields.forEach((field) => delete queryObj[field]);
+    console.log(queryObj);
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    let query = Product.find(JSON.parse(queryStr));
+    // sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    // how to limiting the field
+    if (req.query.fields) {
+      const field = req.query.fields.split(",").join(" ");
+      query = query.select(field);
+    } else {
+      query = query.select("-__v");
+    }
+
+    // pagination
+    const page = req.query.page;
+    const limit = req.query.limit;
+    const skipFrom = (page - 1) * limit;
+    query = query.skip(skipFrom).limit(limit);
+    if (req.query.page) {
+      const productCount = await Product.countDocuments();
+      if (skipFrom >= productCount) {
+        throw new Error("Page does not exist");
+      }
+    }
+    console.log(page, limit, skipFrom);
+
+    const product = await query;
+    res.json({ message: "All products fetched successfully", product });
   } catch (error) {
     throw new Error(error);
   }

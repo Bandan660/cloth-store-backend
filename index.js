@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/dbConnect.js";
 import authRoutes from "./routes/AuthRoutes.js";
 import productRoutes from "./routes/ProductRoutes.js";
+import categoryRoutes from "./routes/CategoryRoutes.js";
 import { errorHandler, notFound } from "./middleware/ErrorHandling.js";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
@@ -22,6 +23,7 @@ app.use(cookieParser());
 // All api routes
 app.use("/api/user", authRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/category", categoryRoutes);
 
 // middleware
 app.use(notFound);

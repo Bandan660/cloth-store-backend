@@ -8,6 +8,7 @@ import {
   deleteUser,
   handleRefreshToken,
   logoutUser,
+  updatePassword,
 } from "../controller/UserController.js";
 import { AuthMiddleware, isAdmin } from "../middleware/AuthMiddleware.js";
 
@@ -15,6 +16,7 @@ const router = express.Router();
 
 // all router
 router.post("/register", registerUser);
+router.put("/password", AuthMiddleware, updatePassword);
 router.post("/login", loginUser);
 router.get("/logout", logoutUser);
 router.get("/getallusers", AuthMiddleware, getAllUser);

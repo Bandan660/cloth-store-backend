@@ -7,7 +7,15 @@ import jwt from "jsonwebtoken";
 
 // register the user
 const registerUser = expressAsyncHandler(async (req, res) => {
-  const { firstname, lastname, email, mobile, password, role } = req.body;
+  const {
+    firstname,
+    lastname,
+    email,
+    mobile,
+    password,
+    role,
+   
+  } = req.body;
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -17,6 +25,7 @@ const registerUser = expressAsyncHandler(async (req, res) => {
 
   try {
     // Encrypt the password
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -91,6 +100,26 @@ const logoutUser = expressAsyncHandler(async (req, res) => {
     secure: true,
   });
   return res.sendStatus(204); // forbidden
+});
+
+// update Password
+const updatePassword = expressAsyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const { password } = req.user;
+  console.log(password);
+  const user = await User.findById(id);
+  if (!password) {
+    res.status(400).json({ message: "password is required" });
+  }
+  if (password) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).json({ message: "password updated successfully" });
+  } else {
+    res.status(400).json({ message: "user not found" });
+  }
 });
 
 // handle refresh token
@@ -192,4 +221,5 @@ export {
   deleteUser,
   handleRefreshToken,
   logoutUser,
+  updatePassword,
 };

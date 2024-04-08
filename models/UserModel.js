@@ -38,6 +38,7 @@ var userSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
   },
+
   timestamp: {
     type: Date,
     default: Date.now(),

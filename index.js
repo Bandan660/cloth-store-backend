@@ -4,6 +4,7 @@ import connectDB from "./config/dbConnect.js";
 import authRoutes from "./routes/AuthRoutes.js";
 import productRoutes from "./routes/ProductRoutes.js";
 import categoryRoutes from "./routes/CategoryRoutes.js";
+import BrandRoutes from "./routes/BrandRoutes.js";
 import { errorHandler, notFound } from "./middleware/ErrorHandling.js";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
@@ -16,7 +17,7 @@ dotenv.config();
 connectDB();
 
 app.use(morgan("dev"));
-app.use(bodyParser.json()); 
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use("/api/user", authRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/brand", BrandRoutes);
 
 // middleware
 app.use(notFound);

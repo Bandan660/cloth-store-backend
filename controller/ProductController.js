@@ -1,4 +1,5 @@
 import { Product } from "../models/ProductModel.js";
+import { User } from "../models/UserModel.js";
 import expressAsyncHandler from "express-async-handler";
 
 // get all products
@@ -99,10 +100,79 @@ const deleteProductByID = async (req, res) => {
   }
 };
 
+// add to wishlist
+const addToWishlist = expressAsyncHandler(async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { id } = req.user;
+    const { productId } = req.body;
+
+    // check is user login or not
+    const user = await User.findById(id);
+    const alreadyAdded = await user.wishlist.find(
+      (id) => id.toString() === productId
+    );
+    if (alreadyAdded) {
+      let user = await User.findByIdAndUpdate(
+        id,
+        { $pull: { wishlist: productId } },
+        { new: true }
+      );
+      res.json({ message: "Product removed from wishlist", user });
+    } else {
+      let user = await User.findByIdAndUpdate(
+        id,
+        { $push: { wishlist: productId } },
+        { new: true }
+      );
+      res.json({ message: "Product added to wishlist", user });
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// product rating
+const rating = expressAsyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const { star, productId ,comment,subject} = req.body;
+  try {
+    const product = await Product.findById(productId);
+
+    let alreadyRated = product.ratings.find(
+      (userId) => userId.postedby.toString() === id.toString()
+    );
+    if (!alreadyRated) {
+      let updateRating = await Product.findByIdAndUpdate(
+        productId,
+        {
+          $push: { ratings: { star, postedby: id ,comment,subject} },
+        },
+        { new: true }
+      ).populate("ratings.postedby");
+      res.json({ message: "Thanks for rating", updateRating });
+    } else {
+      const updateRating = await Product.updateOne(
+        { _id: productId, "ratings.postedby": id },
+        {
+          $set: { "ratings.$.star": star, "ratings.$.comment": comment,"ratings.$.subject": subject },
+        }
+      );
+      res.json({ message: "Your already given rating for this product", updateRating });
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+});
 export {
   getAllProducts,
   getSingleProductById,
   createNewProduct,
   updateProductById,
   deleteProductByID,
+  addToWishlist,
+  rating,
 };

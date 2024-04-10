@@ -1,6 +1,7 @@
 import { Product } from "../models/ProductModel.js";
 import { User } from "../models/UserModel.js";
 import expressAsyncHandler from "express-async-handler";
+import uploadToCloudinary from "../utils/Cloudinary.js";
 
 // get all products
 const getAllProducts = expressAsyncHandler(async (req, res) => {
@@ -135,10 +136,12 @@ const addToWishlist = expressAsyncHandler(async (req, res) => {
   }
 });
 
+// get wishlist item
+
 // product rating
 const rating = expressAsyncHandler(async (req, res) => {
   const { id } = req.user;
-  const { star, productId ,comment,subject} = req.body;
+  const { star, productId, comment, subject } = req.body;
   try {
     const product = await Product.findById(productId);
 
@@ -149,7 +152,7 @@ const rating = expressAsyncHandler(async (req, res) => {
       let updateRating = await Product.findByIdAndUpdate(
         productId,
         {
-          $push: { ratings: { star, postedby: id ,comment,subject} },
+          $push: { ratings: { star, postedby: id, comment, subject } },
         },
         { new: true }
       ).populate("ratings.postedby");
@@ -158,14 +161,58 @@ const rating = expressAsyncHandler(async (req, res) => {
       const updateRating = await Product.updateOne(
         { _id: productId, "ratings.postedby": id },
         {
-          $set: { "ratings.$.star": star, "ratings.$.comment": comment,"ratings.$.subject": subject },
+          $set: {
+            "ratings.$.star": star,
+            "ratings.$.comment": comment,
+            "ratings.$.subject": subject,
+          },
         }
       );
-      res.json({ message: "Your already given rating for this product", updateRating });
+      res.json({
+        message: "Your already given rating for this product",
+        updateRating,
+      });
     }
   } catch (error) {
     throw new Error(error);
   }
+});
+
+// for uploading images
+const uploadImages = expressAsyncHandler(async (req, res) => {
+  const { id } = req.params;
+  // Check if files were uploaded successfully
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded" });
+    }
+    const uploader = (path) => uploadToCloudinary(path, "images");
+    const url = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = file;
+      const newPath = await uploader(path);
+      url.push(newPath);
+    }
+    const findProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        images: url.map((file) => {
+          return file;
+        }),
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ message: "Files uploaded successfully", findProduct });
+  } catch (error) {
+    throw new Error(error);
+  }
+
+  // Make sure the file is an image
+
+  // Send response
 });
 export {
   getAllProducts,
@@ -175,4 +222,5 @@ export {
   deleteProductByID,
   addToWishlist,
   rating,
+  uploadImages,
 };

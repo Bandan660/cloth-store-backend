@@ -7,15 +7,7 @@ import jwt from "jsonwebtoken";
 
 // register the user
 const registerUser = expressAsyncHandler(async (req, res) => {
-  const {
-    firstname,
-    lastname,
-    email,
-    mobile,
-    password,
-    role,
-   
-  } = req.body;
+  const { firstname, lastname, email, mobile, password, role } = req.body;
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -45,6 +37,35 @@ const registerUser = expressAsyncHandler(async (req, res) => {
     res
       .status(400)
       .json({ message: "Failed to create user", error: error.message });
+  }
+});
+
+// login admin
+
+const loginAdmin = expressAsyncHandler(async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const admin = await User.findOne({ email });
+    console.log(admin.role);
+    if (admin && admin.role !== "admin") throw new Error("You are not a admin");
+
+    if (admin && (await bcrypt.compare(password, admin.password))) {
+      const refreshToken = generaterefreshToken(admin._id);
+      const updateuser = await User.findByIdAndUpdate(admin._id, {
+        refreshToken: refreshToken,
+      });
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        maxAge: 48 * 60 * 60 * 1000,
+      });
+      const token = generateToken(admin._id);
+
+      res.status(200).json({ message: "Login successful", admin, token });
+    } else {
+      res.status(401).json({ message: "Invalid email or password" });
+    }
+  } catch (error) {
+    res.status(400).json({ message: "Failed to login", error: error.message });
   }
 });
 
@@ -212,6 +233,30 @@ const deleteUser = expressAsyncHandler(async (req, res) => {
   }
 });
 
+const getWishlist = expressAsyncHandler(async (req, res) => {
+  const { id } = req.user;
+  try {
+    const user = await User.findById(id).populate("wishlist");
+    res.json(user);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// save the user address
+const saveAddress = expressAsyncHandler(async (req, res, next) => {
+  const { id } = req.user;
+  try {
+    const updatedUser = await User.findByIdAndUpdate(id, {
+      address: req?.body?.address,
+      new: true,
+    });
+    res.json(updatedUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -222,4 +267,7 @@ export {
   handleRefreshToken,
   logoutUser,
   updatePassword,
+  loginAdmin,
+  getWishlist,
+  saveAddress
 };

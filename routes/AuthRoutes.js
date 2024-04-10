@@ -9,6 +9,9 @@ import {
   handleRefreshToken,
   logoutUser,
   updatePassword,
+  loginAdmin,
+  getWishlist,
+  saveAddress,
 } from "../controller/UserController.js";
 import { AuthMiddleware, isAdmin } from "../middleware/AuthMiddleware.js";
 
@@ -18,11 +21,15 @@ const router = express.Router();
 router.post("/register", registerUser);
 router.put("/password", AuthMiddleware, updatePassword);
 router.post("/login", loginUser);
+router.post("/admin-login", loginAdmin);
 router.get("/logout", logoutUser);
 router.get("/getallusers", AuthMiddleware, getAllUser);
 router.get("/userdetails/:id", AuthMiddleware, getUserById);
 router.put("/updateuser/:id", AuthMiddleware, updateUser);
+router.put("/save-address",AuthMiddleware,saveAddress)
 router.delete("/deleteuser/:id", deleteUser);
 router.get("/refreshtoken", handleRefreshToken);
+router.get("/get-wishlist", AuthMiddleware, getWishlist);
+
 
 export default router;

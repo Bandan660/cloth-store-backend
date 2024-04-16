@@ -5,6 +5,9 @@ import authRoutes from "./routes/AuthRoutes.js";
 import productRoutes from "./routes/ProductRoutes.js";
 import categoryRoutes from "./routes/CategoryRoutes.js";
 import BrandRoutes from "./routes/BrandRoutes.js";
+import AddressRoutes from "./routes/AddressRoutes.js";
+import CartRoutes from "./routes/CartRoutes.js";
+import OrderRoutes from "./routes/OrderRoutes.js";
 import { errorHandler, notFound } from "./middleware/ErrorHandling.js";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
@@ -26,6 +29,10 @@ app.use("/api/user", authRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/brand", BrandRoutes);
+app.use("/api/address", AddressRoutes);
+app.use("/api/cart" ,CartRoutes);
+app.use("/api/order", OrderRoutes);
+
 
 // middleware
 app.use(notFound);

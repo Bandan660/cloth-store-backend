@@ -11,10 +11,6 @@ import {
   updatePassword,
   loginAdmin,
   getWishlist,
-  saveAddress,
-  userCart,
-  getUserCart,
-  emptyCart
 } from "../controller/UserController.js";
 import { AuthMiddleware, isAdmin } from "../middleware/AuthMiddleware.js";
 
@@ -29,12 +25,8 @@ router.get("/logout", logoutUser);
 router.get("/getallusers", AuthMiddleware, getAllUser);
 router.get("/userdetails/:id", AuthMiddleware, getUserById);
 router.put("/updateuser/:id", AuthMiddleware, updateUser);
-router.put("/save-address", AuthMiddleware, saveAddress);
 router.delete("/deleteuser/:id", deleteUser);
 router.get("/refreshtoken", handleRefreshToken);
 router.get("/get-wishlist", AuthMiddleware, getWishlist);
-router.post("/add-to-cart", AuthMiddleware, userCart);
-router.get("/cart", AuthMiddleware, getUserCart);
-router.delete('/empty-cart', AuthMiddleware, emptyCart);
 
 export default router;

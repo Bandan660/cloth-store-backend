@@ -1,44 +1,55 @@
 import mongoose from "mongoose";
-// Declare the Schema of the Mongo model
-var orderSchema = new mongoose.Schema(
-  {
-    products: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-        },
-        count: Number,
-        color: String,
-      },
-    ],
 
-    paymentIntent: {
-      type: String,
-      default: "Not paid",
+const schema = new mongoose.Schema(
+  {
+    shippingInfo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
+      required: true,
     },
-    orderStatus: {
-      type: String,
-      default: "Not processed",
-      enum: [
-        "Not processed",
-        "Cash on Delivery",
-        "processing",
-        "Dispatched",
-        "Cancelled",
-        "Completed",
-      ],
-    },
-    orderby: {
+
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
+
+    subtotal: {
+      type: Number,
+      required: true,
+    },
+
+    total: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["Processing", "Shipped", "Delivered", "Cancelled", "Returned"],
+      default: "Processing",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
+    },
+
+    orderItems: [
+      {
+        name: String,
+        photo: String,
+        price: Number,
+        quantity: Number,
+        productId: {
+          type: mongoose.Types.ObjectId,
+          ref: "Product",
+        },
+      },
+    ],
   },
   {
-    timestamps: true, // Saves createdAt and updatedAt values automatically
+    timestamps: true,
   }
 );
 
-//Export the model
-const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
-export default Order;
+export const Order = mongoose.model("Order", schema);

@@ -1,6 +1,6 @@
 import { User } from "../models/UserModel.js";
 import { Product } from "../models/ProductModel.js";
-import {Cart} from "../models/CartModel.js";
+import { Cart } from "../models/CartModel.js";
 import expressAsyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import { generaterefreshToken } from "../config/refreshToken.js";
@@ -178,7 +178,7 @@ const getAllUser = expressAsyncHandler(async (req, res) => {
 // get user by id
 const getUserById = expressAsyncHandler(async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate("address");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -246,91 +246,9 @@ const getWishlist = expressAsyncHandler(async (req, res) => {
 });
 
 // save the user address
-const saveAddress = expressAsyncHandler(async (req, res, next) => {
-  const { id } = req.user;
-  try {
-    const updatedUser = await User.findByIdAndUpdate(id, {
-      address: req?.body?.address,
-      new: true,
-    });
-    res.json(updatedUser);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-const userCart = expressAsyncHandler(async (req, res) => {
-  const { cart } = req.body;
-  const { _id } = req.user;
-  try {
-    let product = [];
-    const user = await User.findById(_id);
-    let alreadyExistCart = await Cart.findOne({ orderby: user._id });
 
-    if (alreadyExistCart) {
-      // If cart exists, delete it
-      await Cart.deleteOne({ _id: alreadyExistCart._id });
-      console.log("Existing cart deleted successfully.");
-    }
 
-    // Create a new cart
-    alreadyExistCart = new Cart({ orderby: user._id });
-
-    for (let i = 0; i < cart.length; i++) {
-      let object = {};
-      object.product = cart[i]._id;
-      object.count = cart[i].count;
-      object.color = cart[i].color;
-
-      let getPrice = await Product.findById(cart[i]._id).select("price").exec();
-      if (!getPrice) {
-        console.error(`Product with ID ${cart[i]._id} not found.`);
-        continue;
-      }
-      object.price = getPrice.price;
-      product.push(object);
-    }
-
-    // Calculate cartTotal
-    let cartTotal = 0;
-    for (let i = 0; i < product.length; i++) {
-      cartTotal += product[i].price * product[i].count;
-    }
-
-    // Update alreadyExistCart with the new products and cartTotal
-    alreadyExistCart.products = product;
-    alreadyExistCart.cartTotal = cartTotal;
-
-    // Save the updated cart
-    await alreadyExistCart.save();
-
-    res.json({ message: "Cart updated successfully", cart: alreadyExistCart });
-  } catch (error) {
-    console.error("Error processing user cart:", error);
-    throw new Error(error);
-  }
-});
-
-const getUserCart = expressAsyncHandler(async (req, res) => {
-  console.log(req.user)
-  const { _id } = req.user;
-  try {
-    const cart = await Cart.findOne({orderby: _id}).populate("products.product")
-    res.json(cart);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-const emptyCart = expressAsyncHandler(async (req, res) => {
-  const { _id } = req.user;
-  try {
-    const user = await User.findOne({ _id });
-    const cart = await Cart.findOneAndDelete({ orderby:user. _id });
-    res.json(cart);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+// create order module
 
 export {
   registerUser,
@@ -344,8 +262,4 @@ export {
   updatePassword,
   loginAdmin,
   getWishlist,
-  saveAddress,
-  userCart,
-  getUserCart,
-  emptyCart
 };

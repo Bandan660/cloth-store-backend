@@ -1,29 +1,46 @@
 import mongoose from "mongoose";
-// Declare the Schema of the Mongo model
-var cartSchema = new mongoose.Schema(
-    {
-      products: [
-        {
-          product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-          },
-          count: Number,
-          color: String,
-          price: Number,
+
+const { Schema } = mongoose;
+
+const cartSchema = new Schema(
+  {
+    products: [
+      {
+        product: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
         },
-      ],
-      cartTotal: Number,
-      totalAfterDiscount: Number,
-      orderby: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        quantity: {
+          type: Number,
+          required: true,
+         
+        },
+        color: String,
+        size: String,
       },
+    ],
+    cartTotal: {
+      type: Number,
+      default: 0,
     },
-    {
-      timestamps: true,
-    }
-  );
+    totalAfterDiscount: Number,
+    discounts: [
+      {
+        code: String,
+        amount: Number,
+      },
+    ],
+    orderby: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 //Export the model
 export const Cart = mongoose.models.Cart || mongoose.model("Cart", cartSchema);

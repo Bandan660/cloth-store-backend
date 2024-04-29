@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
 
 // register the user
 const registerUser = expressAsyncHandler(async (req, res) => {
-  const { firstname, lastname, email, mobile, password, role } = req.body;
+  const { fullname, email, mobile, password, role } = req.body;
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -25,8 +25,8 @@ const registerUser = expressAsyncHandler(async (req, res) => {
 
     // Creating the user
     const user = await User.create({
-      firstname,
-      lastname,
+      fullname,
+
       email,
       mobile,
       password: hashedPassword,
@@ -197,8 +197,8 @@ const updateUser = expressAsyncHandler(async (req, res) => {
     let user = await User.findByIdAndUpdate(
       id,
       {
-        firstname: req?.body?.firstname,
-        lastname: req?.body?.lastname,
+        fullname: req?.body?.fullname,
+
         mobile: req?.body?.mobile,
         email: req?.body?.email,
       },
@@ -246,7 +246,6 @@ const getWishlist = expressAsyncHandler(async (req, res) => {
 });
 
 // save the user address
-
 
 // create order module
 

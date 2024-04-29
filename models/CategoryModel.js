@@ -9,9 +9,14 @@ var categorySchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+    image: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
 //Export the model
-export const category = mongoose.models.Category || mongoose.model("Category", categorySchema);
+export const category =
+  mongoose.models.Category || mongoose.model("Category", categorySchema);

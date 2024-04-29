@@ -2,14 +2,11 @@ import mongoose from "mongoose";
 
 // Declare the Schema for the user model
 var userSchema = new mongoose.Schema({
-  firstname: {
+  fullname: {
     type: String,
     required: true,
   },
-  lastname: {
-    type: String,
-    required: true,
-  },
+
   email: {
     type: String,
     required: true,

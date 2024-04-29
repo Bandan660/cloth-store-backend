@@ -1,7 +1,9 @@
 import expressAsyncHandler from "express-async-handler";
 import { Order } from "../models/OrderModel.js";
+import { Cart } from "../models/CartModel.js";
 
 const createOrder = expressAsyncHandler(async (req, res) => {
+  
   try {
     const newOrder = await Order.create(req.body);
 
@@ -10,6 +12,11 @@ const createOrder = expressAsyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
+const checkout=expressAsyncHandler(async(req,res)=>{
+  const {}=req.body;
+
+})
 
 const AllOrder = expressAsyncHandler(async (req, res) => {
   try {

@@ -28,22 +28,29 @@ const schema = new mongoose.Schema(
       enum: ["Processing", "Shipped", "Delivered", "Cancelled", "Returned"],
       default: "Processing",
     },
+    razorpay_payment_id: {
+      type: String,
+      default: null,
+    },
+    razorpay_order_id: {
+      type: String,
+      default: null,
+    },
+    razorpay_signature: {
+      type: String,
+      default: null,
+    },
     paymentStatus: {
       type: String,
       enum: ["Pending", "Paid", "Failed"],
       default: "Pending",
     },
 
-    orderItems: [
+    cartItems: [
       {
-        name: String,
-        photo: String,
-        price: Number,
-        quantity: Number,
-        productId: {
-          type: mongoose.Types.ObjectId,
-          ref: "Product",
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cart",
+        required: true,
       },
     ],
   },

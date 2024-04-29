@@ -12,6 +12,7 @@ import { errorHandler, notFound } from "./middleware/ErrorHandling.js";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import morgan from "morgan";
+import cors from "cors";
 
 dotenv.config();
 const app = express();
@@ -20,9 +21,14 @@ dotenv.config();
 connectDB();
 
 app.use(morgan("dev"));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.get("/", (req, res) => {
+  res.send("Welcome to backend ");
+});
 
 // All api routes
 app.use("/api/user", authRoutes);
@@ -30,9 +36,8 @@ app.use("/api/product", productRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/brand", BrandRoutes);
 app.use("/api/address", AddressRoutes);
-app.use("/api/cart" ,CartRoutes);
+app.use("/api/cart", CartRoutes);
 app.use("/api/order", OrderRoutes);
-
 
 // middleware
 app.use(notFound);

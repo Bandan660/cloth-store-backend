@@ -21,7 +21,11 @@ dotenv.config();
 connectDB();
 
 app.use(morgan("dev"));
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());

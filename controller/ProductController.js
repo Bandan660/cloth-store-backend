@@ -1,7 +1,17 @@
 import { Product } from "../models/ProductModel.js";
 import { User } from "../models/UserModel.js";
 import expressAsyncHandler from "express-async-handler";
-import uploadToCloudinary from "../utils/Cloudinary.js";
+import dotenv from "dotenv";
+dotenv.config();
+
+import cloudinary from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.Cloud_name,
+  api_key: process.env.API_key,
+  api_secret: process.env.API_secret,
+});
+// upload image
 
 // get all products
 const getAllProducts = expressAsyncHandler(async (req, res) => {
@@ -66,13 +76,39 @@ const getSingleProductById = expressAsyncHandler(async (req, res) => {
 // create the product
 const createNewProduct = expressAsyncHandler(async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    // Check if files were uploaded successfully
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded" });
+    }
 
-    res.json({ message: "product created successfully", product });
+    // Make sure all files are images
+    const files = req.files;
+
+    // Upload thumbnail image to Cloudinary
+    const thumbnailResult = await cloudinary.uploader.upload(files[0].path);
+    const thumbnailUrl = thumbnailResult.secure_url;
+
+    // Upload additional images to Cloudinary
+    const additionalImageUrls = [];
+    for (let i = 1; i < files.length; i++) {
+      const result = await cloudinary.uploader.upload(files[i].path);
+      additionalImageUrls.push(result.secure_url);
+    }
+
+    // Create the product with the Cloudinary image URLs
+    const product = await Product.create({
+      ...req.body,
+      thumbnail: thumbnailUrl,
+      images: additionalImageUrls,
+    });
+
+    res.json({ message: "Product created successfully", product });
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
+
 // update the product by id
 const updateProductById = expressAsyncHandler(async (req, res) => {
   try {
@@ -180,41 +216,7 @@ const rating = expressAsyncHandler(async (req, res) => {
 });
 
 // for uploading images
-const uploadImages = expressAsyncHandler(async (req, res) => {
-  const { id } = req.params;
-  // Check if files were uploaded successfully
-  try {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "No files uploaded" });
-    }
-    const uploader = (path) => uploadToCloudinary(path, "images");
-    const url = [];
-    const files = req.files;
-    for (const file of files) {
-      const { path } = file;
-      const newPath = await uploader(path);
-      url.push(newPath);
-    }
-    const findProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        images: url.map((file) => {
-          return file;
-        }),
-      },
-      { new: true }
-    );
-    res
-      .status(200)
-      .json({ message: "Files uploaded successfully", findProduct });
-  } catch (error) {
-    throw new Error(error);
-  }
 
-  // Make sure the file is an image
-
-  // Send response
-});
 export {
   getAllProducts,
   getSingleProductById,
@@ -223,5 +225,4 @@ export {
   deleteProductByID,
   addToWishlist,
   rating,
-  uploadImages,
 };

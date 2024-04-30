@@ -1,12 +1,16 @@
 import mongoose from "mongoose";
 
 // Declare the Schema of the Mongo model
-var productSchema = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
       trim: true,
+    },
+    thumbnail: {
+      type: String,
+      required: true,
     },
     slug: {
       type: String,
@@ -40,7 +44,7 @@ var productSchema = new mongoose.Schema(
       required: true,
     },
     images: {
-      type: Array,
+      type: [String],
     },
     color: {
       type: String,
@@ -59,6 +63,4 @@ var productSchema = new mongoose.Schema(
 );
 
 //Export the model
-
-export const Product =
-  mongoose.models.Product || mongoose.model("Product", productSchema);
+export const Product = mongoose.models.Product || mongoose.model("Product", productSchema);

@@ -47,12 +47,10 @@ const productSchema = new mongoose.Schema(
       type: [String],
     },
     color: {
-      type: String,
-      required: true,
+      type: [String],
     },
     size: {
-      type: String,
-      required: true,
+      type: [String],
     },
     ratings: [
       {
@@ -67,4 +65,5 @@ const productSchema = new mongoose.Schema(
 );
 
 //Export the model
-export const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
+export const Product =
+  mongoose.models.Product || mongoose.model("Product", productSchema);

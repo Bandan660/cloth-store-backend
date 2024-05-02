@@ -73,7 +73,7 @@ const getSingleProductById = expressAsyncHandler(async (req, res) => {
   }
 });
 
-// create the product
+// create the productconst 
 const createNewProduct = expressAsyncHandler(async (req, res) => {
   try {
     // Check if files were uploaded successfully
@@ -95,11 +95,16 @@ const createNewProduct = expressAsyncHandler(async (req, res) => {
       additionalImageUrls.push(result.secure_url);
     }
 
-    // Create the product with the Cloudinary image URLs
+    // Extract colors from request body
+    const { color,size, ...otherFields } = req.body;
+
+    // Create the product with the Cloudinary image URLs and colors
     const product = await Product.create({
-      ...req.body,
+      ...otherFields,
       thumbnail: thumbnailUrl,
       images: additionalImageUrls,
+      color: color.split(',').map(color => color.trim()), // Convert comma-separated string to array of colors
+      size: size.split(',').map(size => size.trim()), // Convert comma-separated string to array of sizes
     });
 
     res.json({ message: "Product created successfully", product });
@@ -108,6 +113,7 @@ const createNewProduct = expressAsyncHandler(async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 // update the product by id
 const updateProductById = expressAsyncHandler(async (req, res) => {

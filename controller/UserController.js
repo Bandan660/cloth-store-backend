@@ -178,14 +178,21 @@ const getAllUser = expressAsyncHandler(async (req, res) => {
 // get user by id
 const getUserById = expressAsyncHandler(async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).populate("address");
+    const userId = req.params.id;
+    const user = await User.findById(userId)
+      .populate("cart")
+      .populate("address")
+      .populate("wishlist");
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    console.log(user);
+
     res.status(200).json({ message: "User found", user });
   } catch (error) {
-    throw new Error(error);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch user", error: error.message });
   }
 });
 // update the user by id

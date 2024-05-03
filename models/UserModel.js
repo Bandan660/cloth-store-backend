@@ -26,10 +26,12 @@ var userSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
-  cart: {
-    type: Array,
-    default: [],
-  },
+  cart: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Cart",
+    },
+  ],
   address: [
     {
       type: mongoose.Schema.Types.ObjectId,

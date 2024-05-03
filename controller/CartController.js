@@ -4,7 +4,7 @@ import { Product } from "../models/ProductModel.js";
 
 // Add product to cart
 const addToCart = expressAsyncHandler(async (req, res) => {
-  const { productId, quantity, color, size } = req.body;
+  const { productId, quantity, color, size,price } = req.body;
   const { _id } = req.user; // Assuming you have user information in the request
 
   try {
@@ -22,7 +22,7 @@ const addToCart = expressAsyncHandler(async (req, res) => {
     if (!cart) {
       // Create a new cart if one doesn't exist
       cart = new Cart({
-        products: [{ product: productId, quantity, color, size }],
+        products: [{ product: productId, quantity, color, size ,price}],
         orderby: _id,
         
       });

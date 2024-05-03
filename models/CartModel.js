@@ -18,6 +18,7 @@ const cartSchema = new Schema(
         },
         color: String,
         size: String,
+        price: Number,
       },
     ],
     cartTotal: {

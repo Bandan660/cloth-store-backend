@@ -110,7 +110,7 @@ const createNewProduct = expressAsyncHandler(async (req, res) => {
     res.json({ message: "Product created successfully", product });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error });
   }
 });
 

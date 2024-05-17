@@ -15,8 +15,9 @@ const storage = multer.diskStorage({
     cb(null, fileName);
   },
 });
+
 const fileFilter = (req, file, cb) => {
-  const allowedMimes = ["image/jpeg", "image/png", "image/webp"]; // Add "image/webp" for WebP format
+  const allowedMimes = ["image/jpeg", "image/png", "image/webp", "image/jpg"]; // Add more MIME types if needed
   if (!allowedMimes.includes(file.mimetype)) {
     // Reject files with invalid MIME types
     return cb(new Error("File must be an image"));
@@ -24,9 +25,8 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upLoad = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
-const handleImageUpload = upLoad.array("images", 5);
-
+const handleImageUpload = upload.array("images", 10);
 
 export { handleImageUpload };

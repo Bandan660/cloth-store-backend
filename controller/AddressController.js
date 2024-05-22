@@ -30,8 +30,8 @@ const createAddress = expressAsyncHandler(async (req, res) => {
 const getAddress = expressAsyncHandler(async (req, res) => {
   try {
     // Find all addresses and populate the user field
-    const addresses = await Address.find().populate("user");
-    res.json({ message: "All addresses", addresses });
+    const address = await Address.find().populate("user");
+    res.json({ message: "All addresses", address });
   } catch (error) {
     // Handle errors
     res
@@ -47,15 +47,15 @@ const getAddressByUserId = expressAsyncHandler(async (req, res) => {
 
   try {
     // Find addresses that belong to the specified user ID
-    const addresses = await Address.find({ user: userId });
+    const address = await Address.find({ user: userId });
 
-    if (!addresses) {
+    if (!address) {
       return res
         .status(404)
         .json({ message: "No addresses found for the user" });
     }
 
-    res.json({ message: "Addresses found", addresses });
+    res.json({ message: "Addresses found", address });
   } catch (error) {
     // Handle errors
     res

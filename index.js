@@ -8,7 +8,6 @@ import BrandRoutes from "./routes/BrandRoutes.js";
 import AddressRoutes from "./routes/AddressRoutes.js";
 import CartRoutes from "./routes/CartRoutes.js";
 import OrderRoutes from "./routes/OrderRoutes.js";
-// import PaymentRoutes from "./routes/PaymentRoutes.js";
 import { errorHandler, notFound } from "./middleware/ErrorHandling.js";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";

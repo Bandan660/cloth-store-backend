@@ -1,10 +1,11 @@
-import { AllOrder, cancelOrder, createOrder, orderDetails, orderbyUser, returnOrder, updateOrderstatus,updatePaymentStatus } from "../controller/OrderController.js";
+import { AllOrder, cancelOrder, createRazorpayOrder,verifyPayment, orderDetails, orderbyUser, returnOrder, updateOrderstatus,updatePaymentStatus } from "../controller/OrderController.js";
 import express from "express";
 import { AuthMiddleware } from "../middleware/AuthMiddleware.js";
 
 const router = express.Router();
 
-router.post("/createOrder", AuthMiddleware, createOrder);
+router.post("/createOrder", AuthMiddleware, createRazorpayOrder);
+router.post("/verifyPayment", AuthMiddleware, verifyPayment);
 router.get("/allorder",AuthMiddleware , AllOrder);
 router.get("/userorders/:id", AuthMiddleware, orderbyUser);
 router.get("/:id",AuthMiddleware, orderDetails);

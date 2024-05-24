@@ -1,17 +1,99 @@
 import expressAsyncHandler from "express-async-handler";
 import { Order } from "../models/OrderModel.js";
 import { Cart } from "../models/CartModel.js";
+import { razorpay } from "../config/RazorpayClient.js";
+import crypto from "crypto";
 
-const createOrder = expressAsyncHandler(async (req, res) => {
+// create order
+const createRazorpayOrder = expressAsyncHandler(async (req, res) => {
+  const { amount, currency, receipt, notes, userId, shippingInfo, cartItems } =
+    req.body;
+
+  if (
+    !amount ||
+    !currency ||
+    !receipt ||
+    !notes ||
+    !userId ||
+    !shippingInfo ||
+    !cartItems
+  ) {
+    return res.status(400).json({ message: "Please fill all the fields" });
+  }
+  const options = {
+    amount: amount * 100,
+    currency: currency,
+    receipt: receipt,
+    notes: notes,
+  };
+
   try {
-    const newOrder = await Order.create(req.body);
+    const razorpayOrder = await razorpay.orders.create(options);
 
-    res.status(200).json(newOrder);
+    if (!razorpayOrder) {
+      return res
+        .status(400)
+        .json({ message: "Razorpay order creation failed" });
+    }
+
+    const newOrder = await Order.create({
+      shippingInfo,
+      user: userId,
+      subtotal: amount,
+      total: amount,
+      paymentStatus: "Pending",
+      cartItems,
+      razorpayOrderId: razorpayOrder.id,
+    });
+    res.status(200).json({
+      message: "Razorpay order created successfully",
+      order: newOrder,
+      
+    });
   } catch (error) {
     throw new Error(error);
   }
 });
 
+// verify payment
+const verifyPayment = expressAsyncHandler(async (req, res) => {
+  const { razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+  const body = razorpayOrderId + " | " + razorpayPaymentId;
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(body.toString())
+    .digest("hex");
+
+  if (expectedSignature === razorpaySignature) {
+    try {
+      const updatedOrder = await Order.findOneAndUpdate(
+        {
+          razorpayOrderId: razorpayOrderId,
+        },
+        {
+          razorpayPaymentId: razorpayPaymentId,
+          razorpaySignature: razorpaySignature,
+          paymentStatus: "Paid",
+        },
+        { new: true }
+      );
+
+      if (!updatedOrder) {
+        return res
+          .status(400)
+          .json({ message: "Payment verification failed", updatedOrder });
+      }
+
+      res.status(200).json({ message: "Payment verified successfully" });
+    } catch (error) {
+      throw new Error(error);
+    }
+  } else {
+    res.status(400).json({ message: "Invalid payment signature" });
+  }
+});
+
+// fetch all order
 const AllOrder = expressAsyncHandler(async (req, res) => {
   try {
     const order = await Order.find().sort({ status: 1, updatedAt: -1 }).exec();
@@ -120,7 +202,8 @@ const returnOrder = expressAsyncHandler(async (req, res) => {
 });
 
 export {
-  createOrder,
+  createRazorpayOrder,
+  verifyPayment,
   AllOrder,
   orderbyUser,
   orderDetails,

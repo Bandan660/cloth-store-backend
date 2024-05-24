@@ -34,6 +34,16 @@ const schema = new mongoose.Schema(
       enum: ["Pending", "Paid", "Failed"],
       default: "Pending",
     },
+    razorpayOrderId: {
+      type: String,
+      required: true,
+    },
+    razorpayPaymentId: {
+      type: String,
+    },
+    razorpaySignature: {
+      type: String,
+    },
 
     cartItems: [
       {

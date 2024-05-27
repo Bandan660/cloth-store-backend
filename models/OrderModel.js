@@ -1,5 +1,19 @@
 import mongoose from "mongoose";
 
+const CartItemSchema = new mongoose.Schema({
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  quantity: { type: Number, required: true },
+  size: { type: String, required: false },
+  color: { type: String, required: false },
+  image: { type: String, required: true },
+  title: { type: String, required: true },
+  price: { type: Number, required: true },
+});
+
 const schema = new mongoose.Schema(
   {
     shippingInfo: {
@@ -45,13 +59,7 @@ const schema = new mongoose.Schema(
       type: String,
     },
 
-    cartItems: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Cart",
-        required: true,
-      },
-    ],
+    cartItems: [CartItemSchema],
   },
   {
     timestamps: true,

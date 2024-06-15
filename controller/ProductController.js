@@ -2,12 +2,10 @@ import { Product } from "../models/ProductModel.js";
 import { User } from "../models/UserModel.js";
 import expressAsyncHandler from "express-async-handler";
 import dotenv from "dotenv";
-dotenv.config();
 
 import cloudinary from "cloudinary";
-import multer from "multer";
 import fs from "fs";
-import path from "path";
+dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -15,9 +13,6 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 
-if (!process.env.CLOUD_NAME || !process.env.API_KEY || !process.env.API_SECRET) {
-  throw new Error("Cloudinary environment variables are not set");
-}// Multer configuration
 
 
 
@@ -90,6 +85,7 @@ const createNewProduct = [
       }
 
       const files = req.files;
+
 
       // Upload thumbnail image to Cloudinary
       const thumbnailResult = await cloudinary.uploader.upload(files[0].path);

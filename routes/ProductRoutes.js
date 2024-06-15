@@ -23,6 +23,7 @@ router.post(
   AuthMiddleware,
   isAdmin,
 
+
   createNewProduct
 );
 router.put("/upload/:id", AuthMiddleware, isAdmin);
